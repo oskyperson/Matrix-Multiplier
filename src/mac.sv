@@ -3,17 +3,47 @@ module mac(
     input logic rst,
     input logic en, //need?
     input logic [15:0] A,
-    input logic [15:0] B,
-    input logic valid,
+    input logic [31:0] partial,
+    input logic [15:0] weight_temp,
+    input logic load,
     output logic [31:0] acc,
-    output logic [15:0] A_out,
-    output logic [15:0] B_out,
-    output logic valid_out
+    output logic [15:0] A_out
 );
 
-    logic [31:0] mult1;
-    logic [2:0] valid_shift;
+    logic [15:0] weight;
 
+    logic [31:0] mult1;
+
+    logic load_detected;
+
+    //loading weights and multiplicaiton 
+    //TODO should weight loading also be a trickle down?
+    always_ff @(posedge clk or negedge rst) begin
+        if(~rst) begin
+            mult1 <= 0;
+            load_detected <= 0;
+            acc <= 0;
+        end else begin
+            if(load && !load_detected) begin
+                weight <= weight_temp;
+                load_detected <= 1'b1;
+            end else begin
+                load_detected <= 1'b0;
+            end
+            if(en) begin
+                A_out <= A;
+                //mult1 <= A * weight;
+                acc <= (A*weight) + partial; //TODO multistage MAC
+            end else begin
+                A_out <= A;
+                acc <= acc;
+            end
+        end
+    end
+
+
+
+    /*
     always_ff @(posedge clk or negedge rst) begin //ASIC might have to change setup
         if(~rst) begin
             //blah
@@ -44,5 +74,5 @@ module mac(
                 valid_out <= valid_out;
             end
         end
-    end
+    end*/
 endmodule

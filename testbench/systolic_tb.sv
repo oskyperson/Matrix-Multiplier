@@ -5,7 +5,7 @@ module systolic_tb();
     logic [31:0] result [2:0][2:0];
     logic [99:0] counter;
     
-    systolic dut(.clk(clk), .rst(rst), .A(A), .B(B), .result(result), .result_valid(result_valid), .en(en));
+    systolic dut(.clk(clk), .rst(rst), .en(en), .load(load), .A_row(A), .weights(B), .result(result));
 
     initial begin
         $dumpfile ("waves/systolic_tb.vcd");
@@ -18,6 +18,7 @@ module systolic_tb();
         begin
             clk = 1'b0;
             //result_valid = 1'b0;
+            load = 1'b0;
             en = 1'b0;
             rst = 1'b1;
             @(posedge clk);

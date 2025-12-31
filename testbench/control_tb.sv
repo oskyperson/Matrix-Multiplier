@@ -4,8 +4,8 @@ module control_tb();
     logic [15:0] B [2:0][2:0];
     logic [31:0] result [2:0][2:0];
     logic [99:0] counter;
-    
-    control dut(.clk(clk), .rst(rst), .A(A), .B(B), .result(result), .result_valid(result_valid), .en(en));
+    logic load;
+    control dut(.clk(clk), .rst(rst), .A(A), .B(B), .result(result), .en(en));
 
     initial begin
         $dumpfile ("waves/control_tb.vcd");
@@ -20,6 +20,7 @@ module control_tb();
             //result_valid = 1'b0;
             en = 1'b0;
             rst = 1'b1;
+            load = 1'b0;
             @(posedge clk);
             @(posedge clk);
             rst = 1'b0;
@@ -55,6 +56,11 @@ module control_tb();
             $display("%0d %0d %0d", B[0][0], B[0][1], B[0][2]);
             $display("%0d %0d %0d", B[1][0], B[1][1], B[1][2]);
             $display("%0d %0d %0d", B[2][0], B[2][1], B[2][2]);
+            load = 1'b1;
+            @(posedge clk);
+            load = 1'b0;
+            @(posedge clk);
+            @(posedge clk);
             en = 1'b1;
             counter_en = 1'b1;
 

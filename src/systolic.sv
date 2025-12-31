@@ -2,18 +2,36 @@ module systolic #(parameter N = 3)(
     input logic clk,
     input logic rst,
     input logic en, //need?
+    input logic load,
     input logic [15:0] A_row [N - 1:0],
-    input logic [15:0] B_col [N - 1:0],
-    output logic [31:0] result [N-1:0][N-1:0],
-    output logic result_valid
+    input logic [15:0] weights [N - 1:0][N - 1:0],
+    output logic [31:0] result [N-1:0]
 );
+    logic [15:0] A_pass [(N*N) : 0];
+    logic [31:0] partial_pass [(N*N) : 0];
+    logic [31:0] acc_arr [(N*N) : 0];
 
-    /*mac zerozero(.clk(clk), .rst(rst), .en(open), .A(), .B(B_out), .valid(), .acc(), .A_out(), .B_out(), .valid_out());
-    mac zeroone(.clk(clk), .rst(rst), .en(open), .A(), .B(B_out), .valid(), .acc(), .A_out(), .B_out(), .valid_out());
-    mac onezero(.clk(clk), .rst(rst), .en(open), .A(), .B(B_out), .valid(), .acc(), .A_out(), .B_out(), .valid_out());
-    mac oneone (.clk(clk), .rst(rst), .en(open), .A(), .B(B_out), .valid(), .acc(), .A_out(), .B_out(), .valid_out());*/
+    assign result = acc_arr[(N*N)-1 : (N*N) - N];
 
-    logic [N*N : 0] valid_bits;
+    
+    genvar k;
+    generate
+        for(k = 0; k < (N*N); k = k + 1) begin : FULL_SYSTOLIC
+
+            if(k == 0) begin
+                mac zerozero(.clk(clk), .rst(rst), .en(en), .A(A_row[0]), .partial(0), .weight_temp(weights[0][0]), .load(load), .acc(acc_arr[0]), .A_out(A_pass[k]));
+            end else if(k%N == 0) begin
+                mac left_col(.clk(clk), .rst(rst), .en(en), .A(A_row[k/N]), .partial(acc_arr[k-N]),.weight_temp(weights[k%N][k-N]), .load(load), .acc(acc_arr[k]), .A_out(A_pass[k]));
+            end else if(k < N) begin
+                mac top_row(.clk(clk), .rst(rst), .en(en), .A(A_pass[k-1]), .partial(0), .weight_temp(weights[0][k]), .load(load), .acc(acc_arr[k]), .A_out(A_pass[k]));
+            end else begin
+                mac filler(.clk(clk), .rst(rst), .en(en), .A(A_pass[k-1]), .partial(acc_arr[k-N]), .weight_temp(weights[k%N][k-N]), .load(load), .acc(acc_arr[k]), .A_out(A_pass[k]));
+            end
+        end
+           
+    endgenerate
+
+    /*logic [N*N : 0] valid_bits;
     logic [15:0] A_pass [(N*N)];
     logic [15:0] B_pass [(N*N)];
 
@@ -25,16 +43,7 @@ module systolic #(parameter N = 3)(
     generate
         for(k = 0; k < (N*N); k = k + 1) begin : FULL_SYSTOLIC
 
-        /*for(i = 0; i < N; i = i + 1) begin : SYSTOLIC_ROW
-            for(j = 0; j < N; j = j + 1) begin : SYSTOLIC_COL*/
                 logic [31:0] acc;
-                //Control
-                /*always@(posedge clk or negedge rst) begin 
-                    if(~rst) begin
-                    end else if() begin
-
-                    end
-                end*/
 
                 //Datapath
                 if(k == 0) begin
@@ -48,8 +57,8 @@ module systolic #(parameter N = 3)(
                     mac filler(.clk(clk), .rst(rst), .en(en), .A(A_pass[k-1]), .B(B_pass[k-N]), .valid(valid_bits[k-1]), .acc(acc_arr[k/N][k%N]), .A_out(A_pass[k]), .B_out(B_pass[k]), .valid_out(valid_bits[k]));
                 end
         end
-            /*end  
-        end*/
+           
     endgenerate
+    */
 
 endmodule
