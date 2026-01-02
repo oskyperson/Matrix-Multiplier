@@ -8,24 +8,28 @@ module systolic #(parameter N = 3)(
     output logic [31:0] result [N-1:0]
 );
     logic [15:0] A_pass [(N*N) : 0];
-    logic [31:0] partial_pass [(N*N) : 0];
+    logic [15:0] A_pass_delay [(N*N) : 0];
+    //logic [31:0] partial_pass [(N*N) : 0];
     logic [31:0] acc_arr [(N*N) : 0];
+    logic [31:0] acc_arr_delay [(N*N) : 0];
 
+   
     assign result = acc_arr[(N*N)-1 : (N*N) - N];
 
-    
+    delay_buffer row(.clk(clk), .rst(rst), .in(A_pass), .out(A_pass_delay));
+    delay_buffer #(.WIDTH(32)) column (.clk(clk), .rst(rst), .in(acc_arr), .out(acc_arr_delay));
+   
     genvar k;
     generate
         for(k = 0; k < (N*N); k = k + 1) begin : FULL_SYSTOLIC
-
             if(k == 0) begin
-                mac zerozero(.clk(clk), .rst(rst), .en(en), .A(A_row[0]), .partial(0), .weight_temp(weights[0][0]), .load(load), .acc(acc_arr[0]), .A_out(A_pass[k]));
+                mac zerozero(.clk(clk), .rst(rst), .en(en), .A(A_row[0]), .partial(0), .weight_temp(weights[0][0]), .load(load), .partial_out(acc_arr_delay[0]), .A_out(A_pass_delay[k]));
             end else if(k%N == 0) begin
-                mac left_col(.clk(clk), .rst(rst), .en(en), .A(A_row[k/N]), .partial(acc_arr[k-N]),.weight_temp(weights[k%N][k-N]), .load(load), .acc(acc_arr[k]), .A_out(A_pass[k]));
+                mac left_col(.clk(clk), .rst(rst), .en(en), .A(A_row[k/N]), .partial(acc_arr_delay[k/N]), .weight_temp(weights[k%N][k/N]), .load(load), .partial_out(acc_arr_delay[k]), .A_out(A_pass_delay[k]));
             end else if(k < N) begin
-                mac top_row(.clk(clk), .rst(rst), .en(en), .A(A_pass[k-1]), .partial(0), .weight_temp(weights[0][k]), .load(load), .acc(acc_arr[k]), .A_out(A_pass[k]));
+                mac top_row(.clk(clk), .rst(rst), .en(en), .A(A_pass_delay[k-1]), .partial(0), .weight_temp(weights[0][k]), .load(load), .partial_out(acc_arr_delay[k]), .A_out(A_pass_delay[k]));
             end else begin
-                mac filler(.clk(clk), .rst(rst), .en(en), .A(A_pass[k-1]), .partial(acc_arr[k-N]), .weight_temp(weights[k%N][k-N]), .load(load), .acc(acc_arr[k]), .A_out(A_pass[k]));
+                mac filler(.clk(clk), .rst(rst), .en(en), .A(A_pass_delay[k-1]), .partial(acc_arr_delay[k/N]), .weight_temp(weights[k%N][k/N]), .load(load), .partial_out(acc_arr_delay[k]), .A_out(A_pass_delay[k]));
             end
         end
            

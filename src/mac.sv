@@ -6,11 +6,14 @@ module mac(
     input logic [31:0] partial,
     input logic [15:0] weight_temp,
     input logic load,
-    output logic [31:0] acc,
+    output logic [31:0] partial_out,
     output logic [15:0] A_out
 );
 
+
+
     logic [15:0] weight;
+    logic [31:0] acc;
 
     logic [31:0] mult1;
 
@@ -34,6 +37,7 @@ module mac(
                 A_out <= A;
                 //mult1 <= A * weight;
                 acc <= (A*weight) + partial; //TODO multistage MAC
+                partial_out <= (A*weight);
             end else begin
                 A_out <= A;
                 acc <= acc;

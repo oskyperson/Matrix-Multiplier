@@ -8,9 +8,9 @@ module control #(parameter N = 3)(
     output logic [31:0] result [N - 1:0][N - 1:0]
 );
 
-    typedef enum logic[2:0] {IDLE, LOAD, MATH, DONE} state_t;
+    typedef enum logic[2:0] {IDLE, LOAD, LOAD2, MATH, DONE} state_t;
     state_t current_state, next_state;
-    logic [4:0] counter;
+    logic [99:0] counter;
 
     logic [15:0] A_row [N - 1:0];
     logic [31:0] acc [N-1:0];
@@ -56,15 +56,19 @@ module control #(parameter N = 3)(
             end 
             LOAD: begin
                 load = 1'b1;
-                next_state = MATH;
+                next_state = LOAD2;
             end 
-            MATH: begin
+            LOAD2: begin
                 load = 1'b0;
+                next_state = MATH;
+            end
+            MATH: begin
+                //load = 1'b0;
                 for(int i = 0; i < N; i++) begin
-                    A_row[i] = A[counter/3][i];
+                    A_row[i] = A[counter/6][i];
                     result[counter][i] = acc[i];
                 end
-                next_state = (counter == 18) ? DONE : MATH;
+                next_state = (counter == 100'd54) ? DONE : MATH;
             end
             DONE: begin
                 $finish;
