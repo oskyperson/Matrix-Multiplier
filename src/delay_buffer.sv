@@ -1,10 +1,11 @@
 module delay_buffer #(
-    parameter N = 3
+    parameter N = 3,
+    parameter WIDTH = 16
 )(
     input logic clk,
     input logic rst,
-    input logic [15:0] in [N-1 : 0],
-    output logic [15:0] out [N-1 : 0]
+    input logic [WIDTH-1:0] in [N-1 : 0],
+    output logic [WIDTH-1:0] out [N-1 : 0]
 );
 
     genvar i;
@@ -13,18 +14,18 @@ module delay_buffer #(
             if(i == 0) begin : zero_delay
                 always_ff @(posedge clk or negedge rst) begin
                     if(~rst) begin
-                        out[i] <= 16'd0;
+                        out[i] <= 0;
                     end else begin
                         out[i] <= in[i];
                     end
                 end
             end else begin : shift_delay
-                logic [15:0] delay_reg [i-1:0];
+                logic [WIDTH-1:0] delay_reg [i-1:0];
                 always_ff @(posedge clk or negedge rst) begin
                     if(~rst) begin
-                        out[i] <= 16'd0;
+                        out[i] <= 0;
                         for(int k = 0; k < i; k++) begin
-                            delay_reg[k] <= 16'd0;
+                            delay_reg[k] <= 0;
                         end
                     end else begin
                         delay_reg[0] <= in[i];

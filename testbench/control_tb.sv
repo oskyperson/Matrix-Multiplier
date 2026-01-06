@@ -4,8 +4,10 @@ module control_tb();
     logic [15:0] B [2:0][2:0];
     logic [31:0] result [2:0][2:0];
     logic [99:0] counter;
-    logic load;
-    control dut(.clk(clk), .rst(rst), .A(A), .B(B), .result(result), .en(en));
+    logic load, read;
+    logic done, done_prev;
+
+    control dut(.clk(clk), .rst(rst), .A(A), .B(B), .final_result(result), .en(en), .read(read), .done_out(done));
 
     initial begin
         $dumpfile ("waves/control_tb.vcd");
@@ -31,6 +33,7 @@ module control_tb();
             @(posedge clk);
             counter = 0;
             counter_en = 0;
+            read = 1'b0;
         end
     endtask
 
@@ -71,20 +74,21 @@ module control_tb();
     initial begin
         reset();
         test1();
+        wait (done == 1);
+        repeat(20) begin
+            @(posedge clk);
+        end
+        read = 1'b1;
+        @(posedge clk);
+        $display("CYCLE \n");
+        $display("%0d %0d %0d", result[0][0], result[0][1], result[0][2]);
+        $display("%0d %0d %0d", result[1][0], result[1][1], result[1][2]);
+        $display("%0d %0d %0d", result[2][0], result[2][1], result[2][2]);
+
     end
 
     always_ff @(posedge clk) begin
-            if(counter_en) begin
-                counter <= counter + 1;
-                $display("CYCLE \n");
-                $display("%0d %0d %0d", result[0][0], result[0][1], result[0][2]);
-                $display("%0d %0d %0d", result[1][0], result[1][1], result[1][2]);
-                $display("%0d %0d %0d", result[2][0], result[2][1], result[2][2]);
-            end
-            if(counter > 95) begin
-                counter_en = 1'b0;
-                $finish;
-            end
+        done_prev <= done;
     end
 
 endmodule
