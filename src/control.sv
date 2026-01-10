@@ -1,4 +1,4 @@
-module control #(parameter N = 3)(
+module control #(parameter N = 4)(
     input logic clk,
     input logic rst,
     input logic en,

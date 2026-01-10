@@ -1,4 +1,4 @@
-module systolic #(parameter N = 3)(
+module systolic #(parameter N = 4)(
     input logic clk,
     input logic rst,
     input logic en, //need?
@@ -12,7 +12,7 @@ module systolic #(parameter N = 3)(
     //output logic start_done
 );
 
-    logic[15:0] A_pass [N-1:0][N-1:0];
+    logic [15:0] A_pass [N-1:0][N-1:0];
     logic [N-1:0][N-1:0] valid_pass_v;
     logic [N-1:0][N-1:0] valid_pass_h;
     logic[15:0] A_skew [N-1:0];
@@ -20,6 +20,24 @@ module systolic #(parameter N = 3)(
     logic valid_bits_skewed [N-1:0];
     logic [31:0] result [N-1:0];
 
+    logic [15:0] weight_pass [N-1:0];
+    logic [15:0] weights_shift [N-1:0][N-1:0];
+    logic [N-1:0] load_pass;
+
+    always_ff @(posedge clk or negedge rst) begin
+        if(~rst) begin
+        end else begin
+            if(load) begin
+                for(int i = 0; i < N; i = i + 1) begin
+                    weight_pass[0] <= weights[N][i];
+                end
+
+            end
+        end
+    end
+
+    
+ 
     always_comb begin
         for(int i = 0; i < N; i = i + 1) begin
             valid_bits[i] = valid;
@@ -66,14 +84,16 @@ module systolic #(parameter N = 3)(
                         .en(en), 
                         .A(A_skew[0]), 
                         .partial(0),
-                        .weight_temp(weights[0][0]),
+                        .weight_temp(weights_shift[0]),
                         .load(load), 
                         .partial_out(par_pass[0][0]),
                         .A_out(A_pass[0][0]),
                         .valid_h_out(valid_pass_h[0][0]),
                         .valid_h(valid_bits_skewed[0]),
                         .valid_v_out(valid_pass_v[0][0]),
-                        .valid_v(valid)
+                        .valid_v(valid),
+                        .weight_out(weight_pass[0]),
+                        .load_out(load_pass[0])
                     );
                 end else if(r == 0) begin
                     mac top_row(
@@ -82,14 +102,16 @@ module systolic #(parameter N = 3)(
                         .en(en), 
                         .A(A_pass[r][c-1]), 
                         .partial(0),
-                        .weight_temp(weights[r][c]),
+                        .weight_temp(weights_shift[c]),
                         .load(load), 
                         .partial_out(par_pass[r][c]),
                         .A_out(A_pass[r][c]),
                         .valid_h_out(valid_pass_h[r][c]),
                         .valid_h(valid_pass_h[r][c-1]),
                         .valid_v_out(valid_pass_v[r][c]),
-                        .valid_v(valid_bits_skewed[c])
+                        .valid_v(valid_bits_skewed[c]),
+                        .weight_out(weight_pass[c]),
+                        .load_out(load_pass[c])
                     );
                 end else if(c == 0) begin
                     mac left_col(
@@ -98,14 +120,16 @@ module systolic #(parameter N = 3)(
                     .en(en), 
                     .A(A_skew[r]), 
                     .partial(par_pass[r-1][c]),
-                    .weight_temp(weights[r][c]),
-                    .load(load), 
+                    .weight_temp(weight_pass[c-1]),
+                    .load(load_pass[c-1]), 
                     .partial_out(par_pass[r][c]),
                     .A_out(A_pass[r][c]),
                     .valid_h_out(valid_pass_h[r][c]),
                     .valid_h(valid_bits_skewed[r]),
                     .valid_v_out(valid_pass_v[r][c]),
-                    .valid_v(valid_pass_v[r-1][c])
+                    .valid_v(valid_pass_v[r-1][c]),
+                    .weight_out(weight_pass[c]),
+                    .load_out(load_pass[c])
                 );
                 end else begin
                     mac tile(
@@ -114,14 +138,16 @@ module systolic #(parameter N = 3)(
                         .en(en),
                         .A(A_pass[r][c-1]), 
                         .partial(par_pass[r-1][c]),
-                        .weight_temp(weights[r][c]),
-                        .load(load), 
+                        .weight_temp(weight_pass[c-1]),
+                        .load(load_pass[c-1]), 
                         .partial_out(par_pass[r][c]),
                         .A_out(A_pass[r][c]),
                         .valid_h_out(valid_pass_h[r][c]),
                         .valid_h(valid_pass_h[r][c-1]),
                         .valid_v_out(valid_pass_v[r][c]),
-                        .valid_v(valid_pass_v[r-1][c])
+                        .valid_v(valid_pass_v[r-1][c]),
+                        .weight_out(weight_pass[c]),
+                        .load_out(load_pass[c])
                     );
                 end
             end

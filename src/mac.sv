@@ -12,6 +12,8 @@ module mac(
     output logic [15:0] A_out,
     output logic valid_h_out,
     output logic valid_v_out
+    output logic [15:0]weight_out;
+    output logic load_out
 );
 
 
@@ -52,8 +54,10 @@ module mac(
     end
 
     //loading weights and multiplicaiton 
-    //TODO should weight loading also be a trickle down?
+    //TODO should weight trickle
     always_ff @(posedge clk or negedge rst) begin
+        load_out <= load;
+        weight_out <= weight_temp; 
         if(~rst) begin
             mult1 <= 0;
             load_detected <= 0;

@@ -1,5 +1,5 @@
 module delay_buffer #(
-    parameter N = 3,
+    parameter N = 4,
     parameter WIDTH = 16
 )(
     input logic clk,

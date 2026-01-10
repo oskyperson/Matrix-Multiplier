@@ -1,5 +1,5 @@
 module deskew #(
-    parameter N = 3,
+    parameter N = 4,
     parameter WIDTH = 32
 )(
     input logic clk,

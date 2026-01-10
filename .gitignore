@@ -1,0 +1,5 @@
+keywords.txt
+/build/
+.gitignore
+./waves/imem_control_tb.vcd
+waves/imem_control_tb.vcd
