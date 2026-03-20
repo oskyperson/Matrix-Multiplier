@@ -2,9 +2,9 @@ module systolic #(parameter N = 4)(
     input logic clk,
     input logic rst,
     input logic en, //need?
-    input logic load,
+    input logic [$clog(N)-1:0] load,
     input logic [15:0] A_row [N - 1:0],
-    input logic [15:0] weights [N - 1:0][N - 1:0],
+    input logic [15:0] weights [N - 1:0],   //TODO no longer takes in a tile now is a row implement trickle
     input logic valid,
     output logic [31:0] result_rows [N-1:0],
     output logic done

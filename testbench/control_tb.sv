@@ -14,7 +14,7 @@ module control_tb();
         $dumpvars(0, control_tb);  
 
         forever #10 clk = ~clk;
-    end
+    end 
 
     task reset();
         begin

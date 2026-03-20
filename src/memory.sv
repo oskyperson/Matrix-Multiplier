@@ -4,28 +4,25 @@ module memory #(
 )(
     input logic clk,
     input logic rst,
-    //input logic wr,
-    input logic [$clog2(SIZE * SIZE * 2)-1:0] addr,
-    //input logic [31:0] data_in,
+    input logic wr,
+    input logic [$clog2(SIZE * SIZE)-1:0] addr,
+    input logic [31:0] data_in,
     output logic [15:0] data_out
 );
 
    
 
-    logic [15:0] mem [0:(SIZE * SIZE * 2)-1]; //TODO fix sizing formula
+    logic [15:0] mem [0:(SIZE * SIZE)-1]; //TODO fix sizing formula
 
     always_ff @(posedge clk) begin
-        /*if(wr) begin
-            if(sel)
-                mem[addr + (SIZE * SIZE)] <= data_in;
-            else
-                mem[addr] <= data_in;
-        end else begin*/
+        if(wr) begin
+            mem[addr] <= data_in;
+        end else begin
             data_out <= mem[addr];
-        //end
+        end
     end
 
-    initial begin
+    /*initial begin
        
         mem = '{
             // =========================
@@ -53,7 +50,7 @@ module memory #(
             4,  3,  2,  1,  0,  1,  2,  3
         };
 
-    end 
+    end */
 
 
    

@@ -7,7 +7,7 @@ module imem_control #(
     input logic en,
     input logic sel, //0 for A and 1 for B
     input logic [$clog2((SIZE * SIZE)/(N * N))-1:0] tile_num, //TODO math
-    output logic [15:0] row_out [N-1:0],
+    output logic [15:0] arr_out [N-1:0],
     output logic valid
 );
 

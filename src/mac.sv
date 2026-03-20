@@ -56,8 +56,6 @@ module mac(
     //loading weights and multiplicaiton 
     //TODO should weight trickle
     always_ff @(posedge clk or negedge rst) begin
-        load_out <= load;
-        weight_out <= weight_temp; 
         if(~rst) begin
             mult1 <= 0;
             load_detected <= 0;
@@ -77,6 +75,10 @@ module mac(
             end else begin
                 A_out <= A_use;
                 acc <= acc;
+            end
+            if(load) begin
+                load_out <= load;
+                weight_out <= weight_temp; 
             end
         end
     end

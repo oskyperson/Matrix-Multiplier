@@ -3,3 +3,5 @@ keywords.txt
 .gitignore
 ./waves/imem_control_tb.vcd
 waves/imem_control_tb.vcd
+*.vcd
+waves/
